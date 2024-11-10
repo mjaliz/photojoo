@@ -1,4 +1,5 @@
 import itertools
+from loguru import logger
 from pinecone.grpc import PineconeGRPC, GRPCClientConfig
 
 from src.vdb.models import ProductEmbed
@@ -7,11 +8,11 @@ from src.vdb.models import ProductEmbed
 # Initialize a client. An API key must be passed, but the
 # value does not matter.
 class VDBClient:
-    def __init__(self, host: str):
+    def __init__(self):
         self._pc = PineconeGRPC(api_key="pclocal")
-        self._host = host
+        self._host = "localhost:5081"
         self._index = self._pc.Index(
-            host=host, grpc_config=GRPCClientConfig(secure=False)
+            host=self._host, grpc_config=GRPCClientConfig(secure=False)
         )
 
     @staticmethod
@@ -30,22 +31,20 @@ class VDBClient:
             namespace="products",
         )
 
-    def batch_upsert(self, items: list[ProductEmbed]):
-        with self._pc.Index(host=self._host, pool_threads=30) as index:
-            # Send requests in parallel
-            async_results = [
-                index.upsert(vectors=ids_vectors_chunk, async_req=True)
-                for ids_vectors_chunk in self._chunks(items)
-            ]
-            # Wait for and retrieve responses (this raises in case of error)
-            [async_result.get() for async_result in async_results]
+    def batch_upsert(self, items: list[dict]):
+        for ids_vectors_chunk in self._chunks(items):
+            self._index.upsert(vectors=ids_vectors_chunk, namespace="products")
+        logger.info("data inserted to vdb.")
 
-    def query(self, emb, filter, k=5):
+    def query(self, emb: list[float], filter: dict | None = None, k=5):
         return self._index.query(
             vector=emb,
             filter=filter,
             top_k=k,
-            include_values=True,
+            # include_values=True,
             include_metadata=True,
             namespace="products",
         )
+
+    def describe_index_stats(self):
+        return self._index.describe_index_stats()

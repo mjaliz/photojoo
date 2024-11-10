@@ -1,4 +1,5 @@
 import json
+from loguru import logger
 from pinecone.core.openapi.data.model.query_response import QueryResponse
 import requests
 from PIL import Image
@@ -57,12 +58,13 @@ def seed_vdb():
         data = json.loads(f.read())
 
     c = CLIP()
-    vdb = VDBClient(host="localhost:5801")
+    vdb = VDBClient()
     products = Products.validate_python(data)
-    products_100 = products[:10]
+    products_100 = products[:100]
+    product_embeds = []
     for product in products_100:
         img = get_image(product.images[0])
-        img_emb = c.image_embedding(img).tolist()[0]
+        img_emb = c.image_embedding(img)
         product_emb = ProductEmbed(
             id=str(product.id),
             values=img_emb,
@@ -76,13 +78,10 @@ def seed_vdb():
                 image_url=product.images[0],
             ),
         )
+        product_embeds.append(product_emb.model_dump())
 
-        vdb.upsert(product_emb)
-    response: QueryResponse = vdb.query(
-        c.text_embedding("A green woman dress designed with flowers").tolist()[0],
-        filter=None,
-    )
-    print(response)
+    vdb.batch_upsert(product_embeds)
+    logger.info(vdb.describe_index_stats())
 
 
 if __name__ == "__main__":
