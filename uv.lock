@@ -732,6 +732,7 @@ dependencies = [
     { name = "pinecone", extra = ["grpc"] },
     { name = "requests" },
     { name = "torch" },
+    { name = "tqdm" },
     { name = "transformers" },
 ]
 
@@ -744,6 +745,7 @@ requires-dist = [
     { name = "pinecone", extras = ["grpc"], specifier = ">=5.3.1" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "torch", specifier = ">=2.5.1" },
+    { name = "tqdm", specifier = ">=4.67.0" },
     { name = "transformers", specifier = ">=4.46.2" },
 ]
 

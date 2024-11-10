@@ -6,7 +6,7 @@ from PIL import Image
 from io import BytesIO
 from pathlib import Path
 from pydantic import BaseModel, TypeAdapter
-from torch import cat
+from tqdm import tqdm
 
 from src.clip import CLIP
 from src.vdb import VDBClient
@@ -60,9 +60,9 @@ def seed_vdb():
     c = CLIP()
     vdb = VDBClient()
     products = Products.validate_python(data)
-    products_100 = products[:100]
+    products_100 = products[:500]
     product_embeds = []
-    for product in products_100:
+    for product in tqdm(products_100):
         img = get_image(product.images[0])
         img_emb = c.image_embedding(img)
         product_emb = ProductEmbed(

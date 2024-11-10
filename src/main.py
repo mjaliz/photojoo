@@ -35,7 +35,17 @@ def search_image(
     vdb: Annotated[VDBClient, Depends(VDBClient)],
 ):
     query = search_filter.query
+    query_filters = []
+    query_filter = None
+    if search_filter.category_name is not None:
+        query_filters.append({"category_name": {"$eq": search_filter.category_name}})
+    if search_filter.price_gte is not None:
+        query_filters.append({"current_price": {"$gte": search_filter.price_gte}})
+    if search_filter.price_lte is not None:
+        query_filters.append({"current_price": {"$lte": search_filter.price_lte}})
+    if len(query_filters) > 0:
+        query_filter = {"$and": [*query_filters]}
     clip: CLIP = request.app.state.clip
     query_emb = clip.text_embedding(query)
-    res: QueryResponse = vdb.query(query_emb)
+    res: QueryResponse = vdb.query(query_emb, filter=query_filter)
     return res.to_dict()
