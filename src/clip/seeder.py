@@ -52,32 +52,38 @@ def get_image(image_URL):
     return image
 
 
-if __name__ == "__main__":
+def seed_vdb():
     with open(DATA_PATH.resolve(), "r") as f:
         data = json.loads(f.read())
 
     c = CLIP()
-    vdb = VDBClient()
+    vdb = VDBClient(host="localhost:5801")
     products = Products.validate_python(data)
     products_100 = products[:10]
     for product in products_100:
         img = get_image(product.images[0])
         img_emb = c.image_embedding(img).tolist()[0]
-        # TODO: null value should not be inserted to vdb
-        product_emb = {
-            "id": str(product.id),
-            "values": img_emb,
-            "metadata": {
-                "category_name": product.category_name,
-                "current_price": product.current_price,
-                "image_url": product.images[0],
-            },
-        }
-        vdb.upsert(product_emb)
+        product_emb = ProductEmbed(
+            id=str(product.id),
+            values=img_emb,
+            metadata=ProductMetadata(
+                category_name=product.category_name
+                if product.category_name is not None
+                else "",
+                current_price=product.current_price
+                if product.current_price is not None
+                else 0,
+                image_url=product.images[0],
+            ),
+        )
 
+        vdb.upsert(product_emb)
     response: QueryResponse = vdb.query(
         c.text_embedding("A green woman dress designed with flowers").tolist()[0],
         filter=None,
     )
-    res = response.to_dict()
     print(response)
+
+
+if __name__ == "__main__":
+    seed_vdb()

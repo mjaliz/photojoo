@@ -1,3 +1,4 @@
+import itertools
 from pinecone.grpc import PineconeGRPC, GRPCClientConfig
 
 from src.vdb.models import ProductEmbed
@@ -6,20 +7,38 @@ from src.vdb.models import ProductEmbed
 # Initialize a client. An API key must be passed, but the
 # value does not matter.
 class VDBClient:
-    def __init__(self):
+    def __init__(self, host: str):
         self._pc = PineconeGRPC(api_key="pclocal")
+        self._host = host
         self._index = self._pc.Index(
-            host="localhost:5081", grpc_config=GRPCClientConfig(secure=False)
+            host=host, grpc_config=GRPCClientConfig(secure=False)
         )
 
+    @staticmethod
+    def _chunks(iterable, batch_size=500):
+        it = iter(iterable)
+        chunk = tuple(itertools.islice(it, batch_size))
+        while chunk:
+            yield chunk
+            chunk = tuple(itertools.islice(it, batch_size))
+
     def upsert(self, item: ProductEmbed):
-        # vector = item.model_dump()
         self._index.upsert(
             vectors=[
-                item,
+                item.model_dump(),
             ],
             namespace="products",
         )
+
+    def batch_upsert(self, items: list[ProductEmbed]):
+        with self._pc.Index(host=self._host, pool_threads=30) as index:
+            # Send requests in parallel
+            async_results = [
+                index.upsert(vectors=ids_vectors_chunk, async_req=True)
+                for ids_vectors_chunk in self._chunks(items)
+            ]
+            # Wait for and retrieve responses (this raises in case of error)
+            [async_result.get() for async_result in async_results]
 
     def query(self, emb, filter, k=5):
         return self._index.query(
@@ -30,34 +49,3 @@ class VDBClient:
             include_metadata=True,
             namespace="products",
         )
-
-
-if __name__ == "__main__":
-    pc = PineconeGRPC(api_key="pclocal")
-
-    # Target the indexes. Use the host and port number along with disabling tls.
-    index1 = pc.Index(host="localhost:5081", grpc_config=GRPCClientConfig(secure=False))
-    # Upsert records into index1
-    index1.upsert(
-        vectors=[
-            {"id": "vec1", "values": [1.0, 1.5], "metadata": {"genre": "comedy"}},
-            {"id": "vec2", "values": [2.0, 1.0], "metadata": {"genre": "drama"}},
-            {"id": "vec3", "values": [0.1, 3.0], "metadata": {"genre": "comedy"}},
-        ],
-        namespace="example-namespace",
-    )
-
-    # Check the number of records in each index
-    print(index1.describe_index_stats())
-
-    # Query index2 with a metadata filter
-    response = index1.query(
-        vector=[3.0, -2.0],
-        filter={"genre": {"$eq": "documentary"}},
-        top_k=1,
-        include_values=True,
-        include_metadata=True,
-        namespace="example-namespace",
-    )
-
-    print(response)

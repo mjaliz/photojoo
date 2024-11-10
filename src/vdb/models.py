@@ -2,8 +2,8 @@ from pydantic import BaseModel
 
 
 class ProductMetadata(BaseModel):
-    category_name: str | None = None
-    current_price: float | None = None
+    category_name: str = ""
+    current_price: float = 0
     image_url: str
 
 
