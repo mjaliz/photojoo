@@ -4,7 +4,8 @@ from transformers import CLIPProcessor, CLIPModel, CLIPTokenizer
 
 class CLIP:
     def __init__(self):
-        self._device = "cuda" if torch.cuda.is_available() else "cpu"
+        # self._device = "cuda" if torch.cuda.is_available() else "cpu"
+        self._device = "cpu"
         self._model_id = "openai/clip-vit-base-patch32"
         self._model = CLIPModel.from_pretrained(self._model_id).to(self._device)
         self._processor = CLIPProcessor.from_pretrained(self._model_id)

@@ -1,4 +1,5 @@
 import json
+from pinecone.core.openapi.data.model.query_response import QueryResponse
 import requests
 from PIL import Image
 from io import BytesIO
@@ -58,10 +59,11 @@ if __name__ == "__main__":
     c = CLIP()
     vdb = VDBClient()
     products = Products.validate_python(data)
-    products_100 = products[:100]
+    products_100 = products[:10]
     for product in products_100:
         img = get_image(product.images[0])
         img_emb = c.image_embedding(img).tolist()[0]
+        # TODO: null value should not be inserted to vdb
         product_emb = {
             "id": str(product.id),
             "values": img_emb,
@@ -73,5 +75,9 @@ if __name__ == "__main__":
         }
         vdb.upsert(product_emb)
 
-    response = vdb.query(c.text_embedding("A green woman dress designed with flowers"))
+    response: QueryResponse = vdb.query(
+        c.text_embedding("A green woman dress designed with flowers").tolist()[0],
+        filter=None,
+    )
+    res = response.to_dict()
     print(response)
