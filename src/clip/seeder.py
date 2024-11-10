@@ -4,8 +4,11 @@ from PIL import Image
 from io import BytesIO
 from pathlib import Path
 from pydantic import BaseModel, TypeAdapter
+from torch import cat
 
 from src.clip import CLIP
+from src.vdb import VDBClient
+from src.vdb.models import ProductEmbed, ProductMetadata
 
 
 class Product(BaseModel):
@@ -52,9 +55,23 @@ if __name__ == "__main__":
     with open(DATA_PATH.resolve(), "r") as f:
         data = json.loads(f.read())
 
-    products = Products.validate_python(data)
-    product_img = products[0].images[0]
-    img = get_image(product_img)
     c = CLIP()
-    img_emb = c.image_embedding(img)
-    print(img_emb)
+    vdb = VDBClient()
+    products = Products.validate_python(data)
+    products_100 = products[:100]
+    for product in products_100:
+        img = get_image(product.images[0])
+        img_emb = c.image_embedding(img).tolist()[0]
+        product_emb = {
+            "id": str(product.id),
+            "values": img_emb,
+            "metadata": {
+                "category_name": product.category_name,
+                "current_price": product.current_price,
+                "image_url": product.images[0],
+            },
+        }
+        vdb.upsert(product_emb)
+
+    response = vdb.query(c.text_embedding("A green woman dress designed with flowers"))
+    print(response)

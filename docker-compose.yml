@@ -5,7 +5,7 @@ services:
     environment:
       PORT: 5081
       INDEX_TYPE: serverless
-      DIMENSION: 2
+      DIMENSION: 512
       METRIC: cosine
     ports:
       - "5081:5081"
