@@ -1,4 +1,5 @@
 import json
+from loguru import logger
 import requests
 from PIL import Image
 from io import BytesIO
@@ -57,26 +58,30 @@ def seed_vdb():
 
     c = CLIP()
     vdb = VDBClient()
-    products = Products.validate_python(data)[:1000]
+    products = Products.validate_python(data)
     product_embeds = []
     for product in tqdm(products):
-        img = get_image(product.images[0])
-        img_emb = c.image_embedding(img)
-        product_emb = ProductEmbed(
-            id=str(product.id),
-            values=img_emb,
-            metadata=ProductMetadata(
-                name=product.name if product.name is not None else "",
-                category_name=product.category_name
-                if product.category_name is not None
-                else "",
-                current_price=product.current_price
-                if product.current_price is not None
-                else 0,
-                image_url=product.images[0],
-            ),
-        )
-        product_embeds.append(product_emb.model_dump())
+        try:
+            img = get_image(product.images[0])
+            img_emb = c.image_embedding(img)
+            product_emb = ProductEmbed(
+                id=str(product.id),
+                values=img_emb,
+                metadata=ProductMetadata(
+                    name=product.name if product.name is not None else "",
+                    category_name=product.category_name
+                    if product.category_name is not None
+                    else "",
+                    current_price=product.current_price
+                    if product.current_price is not None
+                    else 0,
+                    image_url=product.images[0],
+                ),
+            )
+            product_embeds.append(product_emb.model_dump())
+        except Exception as e:
+            logger.exception(e)
+            continue
 
     vdb.batch_upsert(product_embeds)
 
