@@ -1,12 +1,9 @@
 import itertools
-from loguru import logger
 from pinecone.grpc import PineconeGRPC, GRPCClientConfig
 
 from src.vdb.models import ProductEmbed
 
 
-# Initialize a client. An API key must be passed, but the
-# value does not matter.
 class VDBClient:
     def __init__(self):
         self._pc = PineconeGRPC(api_key="pclocal")

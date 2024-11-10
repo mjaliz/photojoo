@@ -5,8 +5,8 @@ from pinecone.core.openapi.data.model.query_response import QueryResponse
 from loguru import logger
 
 
-from src.clip import CLIP, seed_vdb
-from src.vdb import VDBClient
+from src.clip import CLIP
+from src.vdb import VDBClient, seed_vdb
 from src.query import SearchFilter
 
 

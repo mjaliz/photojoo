@@ -1,6 +1,4 @@
 import json
-from loguru import logger
-from pinecone.core.openapi.data.model.query_response import QueryResponse
 import requests
 from PIL import Image
 from io import BytesIO
@@ -59,16 +57,16 @@ def seed_vdb():
 
     c = CLIP()
     vdb = VDBClient()
-    products = Products.validate_python(data)
-    products_100 = products[:500]
+    products = Products.validate_python(data)[:1000]
     product_embeds = []
-    for product in tqdm(products_100):
+    for product in tqdm(products):
         img = get_image(product.images[0])
         img_emb = c.image_embedding(img)
         product_emb = ProductEmbed(
             id=str(product.id),
             values=img_emb,
             metadata=ProductMetadata(
+                name=product.name if product.name is not None else "",
                 category_name=product.category_name
                 if product.category_name is not None
                 else "",
@@ -81,7 +79,6 @@ def seed_vdb():
         product_embeds.append(product_emb.model_dump())
 
     vdb.batch_upsert(product_embeds)
-    logger.info(vdb.describe_index_stats())
 
 
 if __name__ == "__main__":
