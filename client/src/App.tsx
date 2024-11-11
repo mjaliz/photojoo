@@ -3,6 +3,7 @@ import AppNavbar from "./components/AppNavbar";
 import AppContext from "./context";
 import { ApiResponse, fetchProducts, Product } from "./services/http";
 import ProductList from "./components/ProductList";
+import AppSkeleton from "./components/AppSkeleton";
 
 function App() {
   const { appState, setProducts } = useContext(AppContext);
