@@ -13,8 +13,6 @@ export default function ProductItem({
   price,
   category,
 }: ProductItemProps) {
-  console.log(imgUrl);
-
   return (
     <Card className="py-4">
       <CardBody className="overflow-visible py-2 items-center">

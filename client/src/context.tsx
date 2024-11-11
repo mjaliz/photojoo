@@ -24,7 +24,7 @@ const initialState: AppState = {
   products: [],
   query: "",
   categoryName: "",
-  price: { priceGte: 0, priceLte: 10000000 },
+  price: { priceGte: 0, priceLte: 1000 },
 };
 
 const defaultContext: AppContextType = {
@@ -32,7 +32,7 @@ const defaultContext: AppContextType = {
     products: [],
     query: "",
     categoryName: "",
-    price: { priceGte: 0, priceLte: 10000000 },
+    price: { priceGte: 0, priceLte: 1000 },
   },
   setQuery: () => {},
   setCategoryName: () => {},
@@ -56,8 +56,6 @@ export function AppProvider({ children }: PropsWithChildren) {
   };
 
   const setProducts = (products: Product[]) => {
-    console.log(products);
-
     setAppState({ ...appState, products });
   };
 

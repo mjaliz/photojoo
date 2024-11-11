@@ -20,7 +20,7 @@ function App() {
     if (appState.query !== "") {
       fetchItems();
     }
-  }, [appState.query]);
+  }, [appState.query, appState.price, appState.categoryName]);
 
   return (
     <>

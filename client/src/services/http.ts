@@ -30,8 +30,12 @@ export const fetchProducts = async (
   query: AppState
 ): Promise<ApiResponse | ApiError> => {
   try {
+    let filtersQuery = "";
+    if (query.price.priceLte > 0) {
+      filtersQuery += `&price_gte=${query.price.priceGte}&price_lte=${query.price.priceLte}`;
+    }
     const { data } = await axios.get<ApiResponse>(
-      `http://localhost:8000/search/?query=${query.query}`
+      `http://localhost:8000/search/?query=${query.query}${filtersQuery}`
     );
 
     return data;
