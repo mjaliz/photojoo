@@ -1,7 +1,7 @@
 import itertools
 from pinecone.grpc import PineconeGRPC, GRPCClientConfig
 
-from src.vdb.models import ProductEmbed
+from server.src.vdb.models import ProductEmbed
 
 
 class VDBClient:

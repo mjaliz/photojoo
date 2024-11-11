@@ -5,9 +5,9 @@ from pinecone.core.openapi.data.model.query_response import QueryResponse
 from loguru import logger
 
 
-from src.clip import CLIP
-from src.vdb import VDBClient, seed_vdb
-from src.query import SearchFilter
+from server.src.clip import CLIP
+from server.src.vdb import VDBClient, seed_vdb
+from server.src.query import SearchFilter
 
 
 @asynccontextmanager

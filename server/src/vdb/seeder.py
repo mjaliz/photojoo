@@ -7,9 +7,9 @@ from pathlib import Path
 from pydantic import BaseModel, TypeAdapter
 from tqdm import tqdm
 
-from src.clip import CLIP
-from src.vdb import VDBClient
-from src.vdb.models import ProductEmbed, ProductMetadata
+from server.src.clip import CLIP
+from server.src.vdb import VDBClient
+from server.src.vdb.models import ProductEmbed, ProductMetadata
 
 
 class Product(BaseModel):
