@@ -1,23 +1,31 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import AppNavbar from "./components/AppNavbar";
 import AppContext from "./context";
-import { fetchProducts } from "./services/http";
+import { ApiResponse, fetchProducts, Product } from "./services/http";
+import ProductList from "./components/ProductList";
 
 function App() {
-  const { appState } = useContext(AppContext);
+  const { appState, setProducts } = useContext(AppContext);
   useEffect(() => {
     const fetchItems = async () => {
       const res = await fetchProducts(appState);
-      console.log(res);
+      const resp = res as ApiResponse;
+
+      if (resp.matches !== undefined) {
+        setProducts(resp.matches);
+      }
     };
     if (appState.query !== "") {
       fetchItems();
     }
-  }, [appState]);
+  }, [appState.query]);
 
   return (
     <>
       <AppNavbar />
+      <div className="container mx-auto">
+        <ProductList products={appState.products} />
+      </div>
     </>
   );
 }

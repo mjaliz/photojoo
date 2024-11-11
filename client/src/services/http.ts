@@ -1,7 +1,7 @@
 import axios, { AxiosError } from "axios";
 import { AppState } from "../context";
 
-interface Product {
+export interface Product {
   id: string;
   score: number;
   metadata: {
@@ -12,12 +12,17 @@ interface Product {
   };
 }
 
-interface ApiResponse {
-  data: Product[];
-  status: number;
+interface Data {
+  namespaces: string;
+  matches: Product[];
 }
 
-interface ApiError {
+export interface ApiResponse {
+  namespaces: string;
+  matches: Product[];
+}
+
+export interface ApiError {
   message: string;
   status: number | undefined;
 }
@@ -28,6 +33,7 @@ export const fetchProducts = async (
     const { data } = await axios.get<ApiResponse>(
       `http://localhost:8000/search/?query=${query.query}`
     );
+
     return data;
   } catch (error: unknown) {
     const err = error as AxiosError;

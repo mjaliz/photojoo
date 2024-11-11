@@ -32,7 +32,7 @@ class VDBClient:
         for ids_vectors_chunk in self._chunks(items):
             self._index.upsert(vectors=ids_vectors_chunk, namespace="products")
 
-    def query(self, emb: list[float], filter: dict | None = None, k=5):
+    def query(self, emb: list[float], filter: dict | None = None, k=10):
         return self._index.query(
             vector=emb,
             filter=filter,
