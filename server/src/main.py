@@ -1,5 +1,7 @@
 from typing import Annotated
 from fastapi import FastAPI, Request, Query, Depends
+from fastapi.middleware.cors import CORSMiddleware
+
 from contextlib import asynccontextmanager
 from pinecone.core.openapi.data.model.query_response import QueryResponse
 from loguru import logger
@@ -26,6 +28,16 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+origins = ["http://localhost:5173"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_headers=["*"],
+    allow_methods=["*"],
+)
 
 
 @app.get("/search/")
