@@ -58,10 +58,12 @@ def seed_vdb():
 
     c = CLIP()
     vdb = VDBClient()
-    products = Products.validate_python(data)[:1000]
+    products = Products.validate_python(data)[:500]
     product_embeds = []
     for product in tqdm(products):
         try:
+            # TODO: each product has multiple images what we'll gonna do with them?
+            # for now just using one image for each product
             img = get_image(product.images[0])
             img_emb = c.image_embedding(img)
             product_emb = ProductEmbed(
