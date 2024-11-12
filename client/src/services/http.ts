@@ -22,7 +22,7 @@ export interface ApiError {
   status: number | undefined;
 }
 
-let baseUrl = "";
+let baseUrl = "/api";
 if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
   baseUrl = "http://localhost:8000";
 }

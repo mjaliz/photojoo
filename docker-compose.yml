@@ -1,4 +1,18 @@
 services:
+  caddy:
+    caddy:
+    image: caddy:2.9
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./client/app/dist:/srv
+      - caddy_data:/data
+      - caddy_config:/config
+
   index1:
     image: ghcr.io/pinecone-io/pinecone-index:latest
     platform: linux/amd64
@@ -29,3 +43,6 @@ services:
       context: ./client/
       dockerfile: ./Dockerfile
       target: production
+  volumes:
+  caddy_data:
+  caddy_config:
