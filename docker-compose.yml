@@ -1,6 +1,5 @@
 services:
   caddy:
-    caddy:
     image: caddy:2.9
     restart: unless-stopped
     ports:
