@@ -41,7 +41,6 @@ services:
     build:
       context: ./client/
       dockerfile: ./Dockerfile
-      target: production
 volumes:
   caddy_data:
   caddy_config:
