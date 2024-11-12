@@ -1,4 +1,5 @@
 import json
+import os
 from loguru import logger
 import requests
 from PIL import Image
@@ -58,7 +59,7 @@ def seed_vdb():
 
     c = CLIP()
     vdb = VDBClient()
-    products = Products.validate_python(data)[:500]
+    products = Products.validate_python(data)[:100]
     product_embeds = []
     for product in tqdm(products):
         try:

@@ -9,3 +9,23 @@ services:
       METRIC: cosine
     ports:
       - "5081:5081"
+  server:
+    build:
+      context: ./server/
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./server/:/app/server
+    environment:
+      - PYTHONPATH=/app
+      - VDB_HOST=index1:5081
+    command: uv run uvicorn server.src.main:app
+    ports:
+      - 8000:8000
+    depends_on:
+      - index1
+    restart: always
+  client:
+    build:
+      context: ./client/
+      dockerfile: ./Dockerfile
+      target: production

@@ -26,6 +26,12 @@ export interface ApiError {
   message: string;
   status: number | undefined;
 }
+
+let baseUrl = "";
+if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+  baseUrl = "http://localhost:8000";
+}
+
 export const fetchProducts = async (
   query: AppState
 ): Promise<ApiResponse | ApiError> => {
@@ -35,7 +41,7 @@ export const fetchProducts = async (
       filtersQuery += `&price_gte=${query.price.priceGte}&price_lte=${query.price.priceLte}`;
     }
     const { data } = await axios.get<ApiResponse>(
-      `http://localhost:8000/search/?query=${query.query}${filtersQuery}`
+      `${baseUrl}/search/?query=${query.query}${filtersQuery}`
     );
 
     return data;

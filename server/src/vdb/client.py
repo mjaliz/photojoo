@@ -1,4 +1,5 @@
 import itertools
+import os
 from pinecone.grpc import PineconeGRPC, GRPCClientConfig
 
 from server.src.vdb.models import ProductEmbed
@@ -7,7 +8,7 @@ from server.src.vdb.models import ProductEmbed
 class VDBClient:
     def __init__(self):
         self._pc = PineconeGRPC(api_key="pclocal")
-        self._host = "localhost:5081"
+        self._host = os.environ["VDB_HOST"]
         self._index = self._pc.Index(
             host=self._host, grpc_config=GRPCClientConfig(secure=False)
         )
