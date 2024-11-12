@@ -43,5 +43,5 @@ services:
       dockerfile: ./Dockerfile
       target: production
   volumes:
-  caddy_data:
-  caddy_config:
+    caddy_data:
+    caddy_config:
