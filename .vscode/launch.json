@@ -10,7 +10,8 @@
       "request": "launch",
       "module": "uvicorn",
       "args": ["server.src.main:app"],
-      "jinja": true
+      "jinja": true,
+      "envFile": "${workspaceFolder}/server/.env"
     },
     {
       "name": "Python Debugger: Current File",

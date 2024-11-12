@@ -1,9 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect } from "react";
 import AppNavbar from "./components/AppNavbar";
 import AppContext from "./context";
-import { ApiResponse, fetchProducts, Product } from "./services/http";
+import { ApiResponse, fetchProducts } from "./services/http";
 import ProductList from "./components/ProductList";
-import AppSkeleton from "./components/AppSkeleton";
 import Filters from "./components/Filters";
 
 function App() {

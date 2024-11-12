@@ -1,17 +1,5 @@
 import { FormEvent, useContext, useState } from "react";
-import {
-  Navbar,
-  NavbarBrand,
-  NavbarContent,
-  NavbarItem,
-  Link,
-  Input,
-  DropdownItem,
-  DropdownTrigger,
-  Dropdown,
-  DropdownMenu,
-  Avatar,
-} from "@nextui-org/react";
+import { Navbar, NavbarContent, Input } from "@nextui-org/react";
 import { SearchIcon } from "../icons/SearchIcon";
 
 import AppContext from "../context";

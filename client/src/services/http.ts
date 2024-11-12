@@ -12,11 +12,6 @@ export interface Product {
   };
 }
 
-interface Data {
-  namespaces: string;
-  matches: Product[];
-}
-
 export interface ApiResponse {
   namespaces: string;
   matches: Product[];
