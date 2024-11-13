@@ -3,7 +3,7 @@ import os
 from pinecone.grpc import PineconeGRPC, GRPCClientConfig
 from pinecone import Pinecone
 
-from server.src.vdb.models import ProductEmbed
+from src.vdb.models import ProductEmbed
 
 
 class VDBClient:

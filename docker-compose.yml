@@ -31,7 +31,7 @@ services:
     environment:
       - PYTHONPATH=/app
       - VDB_HOST=index1:5081
-    command: uv run uvicorn server.src.main:app
+    command: uv run uvicorn src.main:app
     ports:
       - 8000:8000
     depends_on:
