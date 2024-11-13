@@ -59,7 +59,7 @@ def seed_vdb():
 
     c = CLIP()
     vdb = VDBClient()
-    products = Products.validate_python(data)[:100]
+    products = Products.validate_python(data)[:500]
     product_embeds = []
     for product in tqdm(products):
         try:
