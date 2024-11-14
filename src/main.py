@@ -8,6 +8,7 @@ from loguru import logger
 from meilisearch.errors import MeilisearchApiError
 
 from src.clip import CLIP
+from src.outpu import ProductOutput
 from src.vdb import VDBClient, seed_vdb
 from src.query import SearchFilter
 from src.meili import Meili, seed_meili
@@ -81,6 +82,12 @@ def search_image(
         query_filter = {"$and": [*query_filters]}
     clip: CLIP = request.app.state.clip
     query_emb = clip.text_embedding(query)
-    res: QueryResponse = vdb.query(query_emb, filter=query_filter)
+    vdb_res: QueryResponse = vdb.query(query_emb, filter=query_filter)
     meili_res = meili.search(query, filter=meili_filter)
-    return res.to_dict()
+    vdb_res = vdb_res.to_dict()
+    results: list[ProductOutput] = []
+    for mr in meili_res:
+        results.append(ProductOutput(id=mr.id, metadata=mr.model_dump()))
+    for vdbr in vdb_res.get("matches"):
+        results.append(ProductOutput(**vdbr))
+    return results

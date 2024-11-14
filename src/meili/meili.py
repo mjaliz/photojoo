@@ -1,3 +1,4 @@
+from pydantic import TypeAdapter
 from meilisearch import Client
 from meilisearch.models.index import IndexStats
 from src.meili.model import ProductDoc
@@ -19,7 +20,7 @@ class Meili:
 
     def search(self, query: str, filter: str | None = None) -> list[ProductDoc]:
         res = self._index.search(query, {"filter": filter})
-        return res.get("hits")
+        return TypeAdapter(list[ProductDoc]).validate_python(res.get("hits"))
 
     def index_stats(self) -> IndexStats:
         return self._index.get_stats()
