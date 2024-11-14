@@ -8,7 +8,7 @@ from src.vdb.models import ProductEmbed
 
 class VDBClient:
     def __init__(self):
-        self._pc = PineconeGRPC(api_key=os.environ["VDB_API_KEY"])
+        self._pc = PineconeGRPC(api_key="pclocal")
         self._host = os.environ["VDB_HOST"]
         self._index = self._pc.Index(
             host=self._host, grpc_config=GRPCClientConfig(secure=False)
