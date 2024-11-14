@@ -17,8 +17,8 @@ class Meili:
             ]
         )
 
-    def search(self, query: str, filter: dict | None = None) -> list[ProductDoc]:
-        res = self._index.search(query, filter)
+    def search(self, query: str, filter: str | None = None) -> list[ProductDoc]:
+        res = self._index.search(query, {"filter": filter})
         return res.get("hits")
 
     def index_stats(self) -> IndexStats:

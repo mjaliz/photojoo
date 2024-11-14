@@ -1,9 +1,8 @@
 from typing import Annotated
-from fastapi import FastAPI, Request, Query, Depends
+from fastapi import FastAPI, Request, Query, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from contextlib import asynccontextmanager
-from httpcore import AnyIOBackend
 from pinecone.core.openapi.data.model.query_response import QueryResponse
 from loguru import logger
 from meilisearch.errors import MeilisearchApiError
@@ -58,18 +57,30 @@ def search_image(
     meili: Annotated[Meili, Depends(Meili)],
 ):
     query = search_filter.query
+    if (
+        search_filter.price_gte is not None
+        and search_filter.price_lte is not None
+        and search_filter.price_gte > search_filter.price_lte
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="incorrect price filter"
+        )
     query_filters = []
     query_filter = None
+    meili_filter = ""
     if search_filter.category_name is not None:
         query_filters.append({"category_name": {"$eq": search_filter.category_name}})
+        meili_filter += f"category_name = {search_filter.category_name}"
     if search_filter.price_gte is not None:
         query_filters.append({"current_price": {"$gte": search_filter.price_gte}})
+        meili_filter += f"{' AND' if meili_filter!='' else ''}current_price >= {search_filter.price_gte}"
     if search_filter.price_lte is not None:
         query_filters.append({"current_price": {"$lte": search_filter.price_lte}})
+        meili_filter += f" AND current_price <= {search_filter.price_lte}"
     if len(query_filters) > 0:
         query_filter = {"$and": [*query_filters]}
     clip: CLIP = request.app.state.clip
     query_emb = clip.text_embedding(query)
     res: QueryResponse = vdb.query(query_emb, filter=query_filter)
-    meili_res = meili.search(query)
+    meili_res = meili.search(query, filter=meili_filter)
     return res.to_dict()
