@@ -1,18 +1,5 @@
 services:
-  caddy:
-    image: caddy:2.9
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
-      - ./client/app/dist:/srv
-      - caddy_data:/data
-      - caddy_config:/config
-
-  index1:
+  pinecone:
     image: ghcr.io/pinecone-io/pinecone-index:latest
     platform: linux/amd64
     environment:
@@ -22,25 +9,11 @@ services:
       METRIC: cosine
     ports:
       - "5081:5081"
-  server:
-    build:
-      context: ./server/
-      dockerfile: ./Dockerfile
-    volumes:
-      - ./server/:/app/server
-    environment:
-      - PYTHONPATH=/app
-      - VDB_HOST=index1:5081
-    command: uv run uvicorn src.main:app
+  meili:
+    image: getmeili/meilisearch:v1.11
     ports:
-      - 8000:8000
-    depends_on:
-      - index1
-    restart: always
-  client:
-    build:
-      context: ./client/
-      dockerfile: ./Dockerfile
-volumes:
-  caddy_data:
-  caddy_config:
+      - "7700:7700"
+    volumes:
+      - ./meili:/meili_data
+
+
