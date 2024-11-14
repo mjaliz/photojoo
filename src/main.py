@@ -3,25 +3,35 @@ from fastapi import FastAPI, Request, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from contextlib import asynccontextmanager
+from httpcore import AnyIOBackend
 from pinecone.core.openapi.data.model.query_response import QueryResponse
 from loguru import logger
-
+from meilisearch.errors import MeilisearchApiError
 
 from src.clip import CLIP
 from src.vdb import VDBClient, seed_vdb
 from src.query import SearchFilter
+from src.meili import Meili, seed_meili
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    data_len_to_insert = 50
     vdb = VDBClient()
     stats = vdb.describe_index_stats()
     vec_count = stats.get("total_vector_count")
     if vec_count == 0:
         logger.info("no vector found in db")
-        logger.info("seeding vector database...")
-        seed_vdb()
-        logger.info("seeding vdb done.")
+        seed_vdb(vdb, length=data_len_to_insert)
+    meili = Meili()
+    try:
+        meili_stats = meili.index_stats()
+        if meili_stats.number_of_documents == 0:
+            logger.info("no doc found in meili")
+            seed_meili(meili, length=data_len_to_insert)
+    except MeilisearchApiError:
+        logger.info("no doc found in meili")
+        seed_meili(meili, length=data_len_to_insert)
     app.state.clip = CLIP()
     yield
     logger.info("shutting down...")
@@ -45,6 +55,7 @@ def search_image(
     request: Request,
     search_filter: Annotated[SearchFilter, Query()],
     vdb: Annotated[VDBClient, Depends(VDBClient)],
+    meili: Annotated[Meili, Depends(Meili)],
 ):
     query = search_filter.query
     query_filters = []
@@ -60,4 +71,5 @@ def search_image(
     clip: CLIP = request.app.state.clip
     query_emb = clip.text_embedding(query)
     res: QueryResponse = vdb.query(query_emb, filter=query_filter)
+    meili_res = meili.search(query)
     return res.to_dict()

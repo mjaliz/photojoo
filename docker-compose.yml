@@ -14,6 +14,4 @@ services:
     ports:
       - "7700:7700"
     volumes:
-      - ./meili:/meili_data
-
-
+      - ./meili-data:/meili_data

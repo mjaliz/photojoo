@@ -32,6 +32,20 @@ wheels = [
 ]
 
 [[package]]
+name = "camel-converter"
+version = "4.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ee/3d/dd783586dc0c4aee5b6b88489666fdb2c0c344ea0aa8a5c10746cc423707/camel_converter-4.0.1.tar.gz", hash = "sha256:401414549ae4ac4073e38cdc4aa6d464dc534fc40aa06ff787bf0960b0c86535", size = 38915 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/e5/806359514cc8305f047bd6d39d63890298c0596f7328b534059724bd1a9e/camel_converter-4.0.1-py3-none-any.whl", hash = "sha256:0cba7ca1354a29ca2191983deecc9dcf28889f606c28d6ed18ac7d4586b163ac", size = 6243 },
+]
+
+[package.optional-dependencies]
+pydantic = [
+    { name = "pydantic" },
+]
+
+[[package]]
 name = "certifi"
 version = "2024.8.30"
 source = { registry = "https://pypi.org/simple" }
@@ -512,6 +526,19 @@ wheels = [
 ]
 
 [[package]]
+name = "meilisearch"
+version = "0.31.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "camel-converter", extra = ["pydantic"] },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/49/b3/c7ac76c8e664baac4eb5179b421a6ffb430a288738b5832f2ff47144c5df/meilisearch-0.31.6.tar.gz", hash = "sha256:cb0359da955c7e615534ddb48720027529fc176bf64d864e5d632779d531744e", size = 23184 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9b/18/e8ccfbfb71ba05237d8db6382fd56b58a72a47c208f356c662ed162f4dfe/meilisearch-0.31.6-py3-none-any.whl", hash = "sha256:ee353949868a8454b45233c9e01c6f609d0bf6096be88e07217cfba92ca59907", size = 23800 },
+]
+
+[[package]]
 name = "mpmath"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -728,6 +755,7 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "httpx" },
     { name = "loguru" },
+    { name = "meilisearch" },
     { name = "pillow" },
     { name = "pinecone", extra = ["grpc"] },
     { name = "requests" },
@@ -741,6 +769,7 @@ requires-dist = [
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.4" },
     { name = "httpx", specifier = ">=0.27.2" },
     { name = "loguru", specifier = ">=0.7.2" },
+    { name = "meilisearch", specifier = ">=0.31.6" },
     { name = "pillow", specifier = ">=11.0.0" },
     { name = "pinecone", extras = ["grpc"], specifier = ">=5.3.1" },
     { name = "requests", specifier = ">=2.32.3" },

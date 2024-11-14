@@ -1,7 +1,6 @@
 import itertools
 import os
 from pinecone.grpc import PineconeGRPC, GRPCClientConfig
-from pinecone import Pinecone
 
 from src.vdb.models import ProductEmbed
 
@@ -9,12 +8,10 @@ from src.vdb.models import ProductEmbed
 class VDBClient:
     def __init__(self):
         self._pc = PineconeGRPC(api_key="pclocal")
-        self._host = os.environ["VDB_HOST"]
+        self._host = os.environ["PINECONE_HOST"]
         self._index = self._pc.Index(
             host=self._host, grpc_config=GRPCClientConfig(secure=False)
         )
-        # self._pc = Pinecone(api_key=os.environ["VDB_API_KEY"])
-        # self._pc.Index("photojoo")
 
     @staticmethod
     def _chunks(iterable, batch_size=500):

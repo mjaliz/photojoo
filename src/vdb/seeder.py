@@ -3,47 +3,13 @@ from loguru import logger
 import requests
 from PIL import Image
 from io import BytesIO
-from pathlib import Path
-from pydantic import BaseModel, TypeAdapter
 from tqdm import tqdm
 
 from src.clip import CLIP
+from src.utils.data_loader import Product
 from src.vdb import VDBClient
 from src.vdb.models import ProductEmbed, ProductMetadata
-
-
-class Product(BaseModel):
-    id: int
-    name: str
-    description: str
-    material: str | None = None
-    rating: int | None = None
-    images: list[str]
-    code: str
-    brand_id: int | None = None
-    brand_name: str | None = None
-    category_id: int | None = None
-    category_name: str | None = None
-    gender_id: int | None = None
-    gender_name: str | None = None
-    shop_id: int
-    shop_name: str
-    link: str | None = None
-    status: str
-    colors: list[str] | None = None
-    sizes: list[str] | None = None
-    region: str
-    currency: str
-    current_price: float | None = None
-    old_price: float | None = None
-    off_percent: int | None = None
-    update_date: str
-
-
-Products = TypeAdapter(list[Product])
-
-DATA_DIR = Path(__file__).parent.resolve().joinpath("..", "..", "data")
-DATA_PATH = DATA_DIR.joinpath("products (1).json")
+from src.utils import load_json_data
 
 
 def get_image(image_URL):
@@ -52,13 +18,12 @@ def get_image(image_URL):
     return image
 
 
-def seed_vdb():
-    with open(DATA_PATH.resolve(), "r") as f:
-        data = json.loads(f.read())
-
+def seed_vdb(vdb: VDBClient, length=None):
+    logger.info(f"seeding {length if length is not None else ''} vector database...")
+    products: list[Product] = load_json_data()
+    if length is not None:
+        products = products[:length]
     c = CLIP()
-    vdb = VDBClient()
-    products = Products.validate_python(data)[:500]
     product_embeds = []
     for product in tqdm(products):
         try:
@@ -86,6 +51,7 @@ def seed_vdb():
             continue
 
     vdb.batch_upsert(product_embeds)
+    logger.info("seeding vdb done.")
 
 
 if __name__ == "__main__":
