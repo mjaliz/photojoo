@@ -3,5 +3,6 @@ WORKDIR /app
 COPY pyproject.toml uv.lock /app/
 RUN uv sync --frozen
 COPY . /app/
+EXPOSE 8000
 CMD [ "uv","run","uvicorn", "src.main:app" ]
 # comment
