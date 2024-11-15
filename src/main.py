@@ -1,3 +1,4 @@
+import os
 from typing import Annotated
 from fastapi import FastAPI, Request, Query, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +18,7 @@ from src.meili import Meili, seed_meili
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    data_len_to_insert = 500
+    data_len_to_insert = os.environ.get("DATA_LEN")
     vdb = VDBClient()
     stats = vdb.describe_index_stats()
     vec_count = stats.get("total_vector_count")
@@ -40,7 +41,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-origins = ["http://localhost:5173"]
+origins = [
+    "http://localhost:5173",
+    "https://photojoo.liara.run/",
+]
 
 app.add_middleware(
     CORSMiddleware,
