@@ -17,7 +17,7 @@ from src.meili import Meili, seed_meili
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    data_len_to_insert = 500
+    data_len_to_insert = 2000
     vdb = VDBClient()
     stats = vdb.describe_index_stats()
     vec_count = stats.get("total_vector_count")
