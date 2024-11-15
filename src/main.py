@@ -90,7 +90,7 @@ def build_filters(filters: SearchFilter) -> tuple[list[dict] | None, str]:
     if filters.price_gte is not None:
         query_filters.append({"current_price": {"$gte": filters.price_gte}})
         meili_filter += (
-            f"{' AND' if meili_filter!='' else ''}current_price >= {filters.price_gte}"
+            f"{' AND ' if meili_filter!='' else ''}current_price >= {filters.price_gte}"
         )
     if filters.price_lte is not None:
         query_filters.append({"current_price": {"$lte": filters.price_lte}})
