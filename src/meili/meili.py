@@ -1,3 +1,4 @@
+import os
 from pydantic import TypeAdapter
 from meilisearch import Client
 from meilisearch.models.index import IndexStats
@@ -6,7 +7,7 @@ from src.meili.model import ProductDoc
 
 class Meili:
     def __init__(self):
-        self._client = Client("http://127.0.0.1:7700", "masterKey")
+        self._client = Client(os.environ.get("MEILI_HOST"), "masterKey")
         self._index = self._client.index("products")
 
     def add_documents(self, documents: list[ProductDoc]):
