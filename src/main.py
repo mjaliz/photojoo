@@ -8,7 +8,8 @@ from loguru import logger
 from meilisearch.errors import MeilisearchApiError
 
 from src.clip import CLIP
-from src.outpu import ProductOutput
+from src.meili.model import ProductDoc
+from src.outpu import ProductOutput, Match
 from src.vdb import VDBClient, seed_vdb
 from src.query import SearchFilter
 from src.meili import Meili, seed_meili
@@ -16,7 +17,7 @@ from src.meili import Meili, seed_meili
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    data_len_to_insert = 50
+    data_len_to_insert = 500
     vdb = VDBClient()
     stats = vdb.describe_index_stats()
     vec_count = stats.get("total_vector_count")
@@ -58,36 +59,66 @@ def search_image(
     meili: Annotated[Meili, Depends(Meili)],
 ):
     query = search_filter.query
+    vdb_filters, meili_filters = build_filters(search_filter)
+
+    clip: CLIP = request.app.state.clip
+    query_emb = clip.text_embedding(query)
+
+    vdb_res: QueryResponse = vdb.query(query_emb, filter=vdb_filters)
+    meili_res = None
+    if search_filter.keyword_search:
+        meili_res = meili.search(query, filter=meili_filters)
+
+    return combine_search_results(vdb_res, meili_res)
+
+
+def build_filters(filters: SearchFilter) -> tuple[list[dict] | None, str]:
     if (
-        search_filter.price_gte is not None
-        and search_filter.price_lte is not None
-        and search_filter.price_gte > search_filter.price_lte
+        filters.price_gte is not None
+        and filters.price_lte is not None
+        and filters.price_gte > filters.price_lte
     ):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="incorrect price filter"
         )
     query_filters = []
-    query_filter = None
+    vdb_filter = None
     meili_filter = ""
-    if search_filter.category_name is not None:
-        query_filters.append({"category_name": {"$eq": search_filter.category_name}})
-        meili_filter += f"category_name = {search_filter.category_name}"
-    if search_filter.price_gte is not None:
-        query_filters.append({"current_price": {"$gte": search_filter.price_gte}})
-        meili_filter += f"{' AND' if meili_filter!='' else ''}current_price >= {search_filter.price_gte}"
-    if search_filter.price_lte is not None:
-        query_filters.append({"current_price": {"$lte": search_filter.price_lte}})
-        meili_filter += f" AND current_price <= {search_filter.price_lte}"
+    if filters.category_name is not None:
+        query_filters.append({"category_name": {"$eq": filters.category_name}})
+        meili_filter += f"category_name = {filters.category_name}"
+    if filters.price_gte is not None:
+        query_filters.append({"current_price": {"$gte": filters.price_gte}})
+        meili_filter += (
+            f"{' AND' if meili_filter!='' else ''}current_price >= {filters.price_gte}"
+        )
+    if filters.price_lte is not None:
+        query_filters.append({"current_price": {"$lte": filters.price_lte}})
+        meili_filter += f" AND current_price <= {filters.price_lte}"
     if len(query_filters) > 0:
-        query_filter = {"$and": [*query_filters]}
-    clip: CLIP = request.app.state.clip
-    query_emb = clip.text_embedding(query)
-    vdb_res: QueryResponse = vdb.query(query_emb, filter=query_filter)
-    meili_res = meili.search(query, filter=meili_filter)
+        vdb_filter = {"$and": [*query_filters]}
+
+    return vdb_filter, meili_filter
+
+
+def combine_search_results(
+    vdb_res: QueryResponse,
+    meili_res: list[ProductDoc] | None,
+) -> ProductOutput:
     vdb_res = vdb_res.to_dict()
-    results: list[ProductOutput] = []
+    vdb_matches = vdb_res.get("matches")
+    ids = []
+    results: list[Match] = []
+    for vdbm in vdb_matches:
+        results.append(Match(**vdbm))
+        ids.append(vdbm.get("id"))
+
+    if meili_res is None:
+        return ProductOutput(matches=results)
+
     for mr in meili_res:
-        results.append(ProductOutput(id=mr.id, metadata=mr.model_dump()))
-    for vdbr in vdb_res.get("matches"):
-        results.append(ProductOutput(**vdbr))
-    return results
+        # Check for possibly duplicate results
+        if mr.id not in ids:
+            results.append(Match(id=mr.id, metadata=mr.model_dump()))
+
+    return ProductOutput(matches=results)
